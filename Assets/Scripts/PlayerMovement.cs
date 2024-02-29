@@ -6,6 +6,8 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField]
+    Animator anim;
+    [SerializeField]
     private CharacterController cc;
 
     private float speed = 9.0f;         // XZ movement speed
@@ -22,8 +24,8 @@ public class PlayerMovement : MonoBehaviour
     private float jumpsAvailable = 0;
     private float jumpsMax = 2;
 
-    //[SerializeField] private GameObject model;          // a reference to the model (inside the Player gameObject)
-    //private float rotateToFaceMovementSpeed = 5f;       // the speed to rotate our model towards the movement vector
+    [SerializeField] private GameObject model;          // a reference to the model (inside the Player gameObject)
+    private float rotateToFaceMovementSpeed = 5f;       // the speed to rotate our model towards the movement vector
 
     //[SerializeField] private Camera cam;                // a reference to the main camera
     //private float rotateToFaceAwayFromCameraSpeed = 5f; // the speed to rotate our Player to align with the camera view.
@@ -47,8 +49,17 @@ public class PlayerMovement : MonoBehaviour
         // ensure diagonal movement doesn't exceed horiz/vert movement speed
         movement = Vector3.ClampMagnitude(movement, 1.0f);
 
+        // set the animator's velocity parameter based on our XZ movement
+        anim.SetFloat("velocity", movement.magnitude);
+
         // convert from local to global coordinates
         movement = transform.TransformDirection(movement);
+
+        if(movement.magnitude > 0)
+        {
+            RotateModelToFaceMovement(movement);
+        }
+
         movement *= speed;
 
         // calculate yVelocity and add it to the player's movement vector
@@ -64,9 +75,11 @@ public class PlayerMovement : MonoBehaviour
         // give upward y Velocity if we jumped
         if(Input.GetButtonDown("Jump") && jumpsAvailable > 0)
         {
+            anim.SetTrigger("jump");
             yVelocity = initialJumpVelocity;
             jumpsAvailable--;
         }
+        anim.SetBool("isGrounded", cc.isGrounded);
         movement.y = yVelocity;
 
         movement *= Time.deltaTime; // make all movement processor independent
@@ -84,13 +97,13 @@ public class PlayerMovement : MonoBehaviour
     private void RotateModelToFaceMovement(Vector3 moveDirection)
     {
         // Determine the rotation needed to face the direction of movement (only XZ movement - ignore Y)
-        //Quaternion newRotation = Quaternion.LookRotation(new Vector3(moveDirection.x, 0f, moveDirection.z));
+        Quaternion newRotation = Quaternion.LookRotation(new Vector3(moveDirection.x, 0f, moveDirection.z));
 
         // set the model's rotation
         //model.transform.rotation = newRotation;
 
         // replace the above line with this one to enable smoothing
-        //model.transform.rotation = Quaternion.Slerp(model.transform.rotation, newRotation, rotateToFaceMovementSpeed * Time.deltaTime);
+        model.transform.rotation = Quaternion.Slerp(model.transform.rotation, newRotation, rotateToFaceMovementSpeed * Time.deltaTime);
     }
 
     // set the player's Y rotation (yaw) to be aligned with the camera's Y rotation
