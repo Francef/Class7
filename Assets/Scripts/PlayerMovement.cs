@@ -27,8 +27,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject model;          // a reference to the model (inside the Player gameObject)
     private float rotateToFaceMovementSpeed = 5f;       // the speed to rotate our model towards the movement vector
 
-    //[SerializeField] private Camera cam;                // a reference to the main camera
-    //private float rotateToFaceAwayFromCameraSpeed = 5f; // the speed to rotate our Player to align with the camera view.
+    [SerializeField] private Camera cam;                // a reference to the main camera
+    private float rotateToFaceAwayFromCameraSpeed = 5f; // the speed to rotate our Player to align with the camera view.
 
 
     private void Start()
@@ -58,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
         if(movement.magnitude > 0)
         {
             RotateModelToFaceMovement(movement);
+            RotatePlayerToFaceAwayFromCamera();
         }
 
         movement *= speed;
@@ -88,8 +89,12 @@ public class PlayerMovement : MonoBehaviour
         cc.Move(movement);  
 
         // rotate the player
-        Vector3 rotation = Vector3.up * rotationSpeed * Time.deltaTime * Input.GetAxis("Mouse X");
-        transform.Rotate(rotation);
+        // Vector3 rotation = Vector3.up * rotationSpeed * Time.deltaTime * Input.GetAxis("Mouse X");
+        // transform.Rotate(rotation);
+        if (yVelocity < -40)
+        {
+            anim.SetBool("isFalling", true);
+        }
     }
 
 
@@ -110,13 +115,13 @@ public class PlayerMovement : MonoBehaviour
     private void RotatePlayerToFaceAwayFromCamera()
     {
         // isolate the camera's Y rotation
-        //Quaternion camRotation = Quaternion.Euler(0, cam.transform.rotation.eulerAngles.y, 0);
+        Quaternion camRotation = Quaternion.Euler(0, cam.transform.rotation.eulerAngles.y, 0);
 
         // set the player's rotation
         //transform.rotation = camRotation;
         
         // replace the above line with this one to enable smoothing
-        //transform.rotation = Quaternion.Slerp(transform.rotation, camRotation, rotateToFaceAwayFromCameraSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, camRotation, rotateToFaceAwayFromCameraSpeed * Time.deltaTime);
     }
 
 }
